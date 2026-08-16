@@ -10,7 +10,7 @@ import { FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 
 const RegisterForm = () => {
-  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,36 +19,41 @@ const RegisterForm = () => {
   const [serverSuccess, setServerSuccess] = useState("");
   const formSubmitHandler = (e: React.FormEvent) => {
     e.preventDefault();
-    const validation = RegisterShema.safeParse({ username, email, password });
+    const validation = RegisterShema.safeParse({ name, email, password });
     if (!validation.success) {
       return setClientError(validation.error.issues[0].message);
     }
     setLoading(true);
-    registerAction({ username, email, password }).then((result) => {
-      if (result?.error) setServerError(result.error);
+    registerAction({ name, email, password }).then((result) => {
       if (result?.success) {
-        setServerSuccess(result.success);
+        setClientError("");
+        setServerError("");
         setEmail("");
+        setName("");
         setPassword("");
+        setServerSuccess(result.message);
+      }
+      if (!result?.success) {
+        setServerSuccess("");
+        setServerError(result.message);
       }
     });
-    setUsername("");
-    setClientError("");
-    setServerError("");
+
     setLoading(false);
   };
   return (
     <form onSubmit={formSubmitHandler}>
       <div className="flex flex-col mb-3">
-        <label className="p-1 text-slate-500 font-bold" htmlFor="username">
-          Username
+        <label className="p-1 text-slate-500 font-bold" htmlFor="name">
+          name
         </label>
         <input
           type="text"
-          id="username"
+          id="name"
           className="border border-slate-500 rounded-lg px-2 py-1 text-xl"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          disabled={loading}
         />
       </div>
       <div className="flex flex-col mb-3">
@@ -61,6 +66,7 @@ const RegisterForm = () => {
           className="border border-slate-500 rounded-lg px-2 py-1 text-xl"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          disabled={loading}
         />
       </div>
       <div className="flex flex-col mb-3">
@@ -73,6 +79,7 @@ const RegisterForm = () => {
           className="border border-slate-500 rounded-lg px-2 py-1 text-xl"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          disabled={loading}
         />
       </div>
       {(clientError || serverError) && (
