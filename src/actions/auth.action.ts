@@ -3,6 +3,8 @@ import { prisma } from "./../utils/prisma";
 import { LoginShema, RegisterShema } from "@/utils/validationSchemas";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
+import { signIn, signOut } from "@/auth";
+import { AuthError } from "next-auth";
 
 type LoginDto = z.infer<typeof LoginShema>;
 type RegisterDto = z.infer<typeof RegisterShema>;
@@ -11,10 +13,23 @@ type RegisterDto = z.infer<typeof RegisterShema>;
 export const loginAction = async (data: LoginDto) => {
   const validation = LoginShema.safeParse(data);
   if (!validation.success) {
-    return { error: "Invalid credentials" };
+    return { success: false, message: "Invalid credentials" };
   }
-  console.log(data);
-  return { success: "Logged is successfully" };
+  const { email, password } = validation.data;
+  try {
+    await signIn("credentials", { email, password, redirectTo: "/profile" });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case "CredentialsSignin":
+          return { success: false, message: "Invalid email or password" };
+        default:
+          return { success: false, message: "Something went wrong" };
+      }
+    }
+    throw error;
+  }
+  return { success: true, message: "Logged is successfully" };
 };
 
 //register action
@@ -34,4 +49,8 @@ export const registerAction = async (data: RegisterDto) => {
     data: { email, password: hashedPassword, name },
   });
   return { success: true, message: "user created is successfully" };
+};
+
+export const logoutAction = async () => {
+  await signOut();
 };

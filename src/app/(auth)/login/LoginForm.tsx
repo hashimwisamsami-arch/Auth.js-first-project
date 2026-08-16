@@ -15,7 +15,7 @@ const LoginForm = () => {
   const [loading, setLoading] = useState(false);
   const [clientError, setClientError] = useState("");
   const [serverError, setServerError] = useState("");
-  const [serverSuccess, setServerSuccess] = useState("");
+
   const formSubmitHandler = (e: React.FormEvent) => {
     e.preventDefault();
     const validation = LoginShema.safeParse({ email, password });
@@ -24,17 +24,9 @@ const LoginForm = () => {
     }
     setLoading(true);
     loginAction({ email, password }).then((result) => {
-      if (result?.error) setServerError(result.error);
-      if (result?.success) {
-        setServerSuccess(result.success);
-        setEmail("");
-        setPassword("");
-      }
+      if (!result?.success) setServerError(result.message);
+      setLoading(false);
     });
-
-    setClientError("");
-    setServerError("");
-    setLoading(false);
   };
   return (
     <form onSubmit={formSubmitHandler}>
@@ -48,6 +40,7 @@ const LoginForm = () => {
           className="border border-slate-500 rounded-lg px-2 py-1 text-xl"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          disabled={loading}
         />
       </div>
       <div className="flex flex-col mb-3">
@@ -60,13 +53,12 @@ const LoginForm = () => {
           className="border border-slate-500 rounded-lg px-2 py-1 text-xl"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          disabled={loading}
         />
       </div>
       {(clientError || serverError) && (
         <Alert type="error" message={clientError || serverError} />
       )}
-
-      {serverSuccess && <Alert type="success" message={serverSuccess} />}
       <button
         disabled={loading}
         className="flex items-center justify-center bg-slate-800 hover:bg-slate-900 mt-4 text-white cursor-pointer rounded-lg w-full p-2 text-xl disabled:bg-gray-300"
