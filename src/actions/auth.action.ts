@@ -39,16 +39,20 @@ export const registerAction = async (data: RegisterDto) => {
     return { success: false, message: "Invalid credentials" };
   }
   const { name, password, email } = validation.data;
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (user) {
-    return { success: false, message: "User already exist" };
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (user) {
+      return { success: false, message: "User already exist" };
+    }
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    await prisma.user.create({
+      data: { email, password: hashedPassword, name },
+    });
+    return { success: true, message: "user created is successfully" };
+  } catch {
+    return { success: false, message: "Something went wrong" };
   }
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-  await prisma.user.create({
-    data: { email, password: hashedPassword, name },
-  });
-  return { success: true, message: "user created is successfully" };
 };
 
 export const logoutAction = async () => {
