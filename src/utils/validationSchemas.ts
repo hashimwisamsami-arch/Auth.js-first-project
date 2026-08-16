@@ -8,7 +8,7 @@ export const LoginShema = z.object({
 });
 
 export const RegisterShema = z.object({
-  username: z
+  name: z
     .string({
       error: (issue) => {
         if (issue.input === undefined) {
