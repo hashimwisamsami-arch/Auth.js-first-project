@@ -1,5 +1,8 @@
-import { auth as proxy } from "@/auth";
+import authConfig from "./auth.config";
+import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
+
+const { auth: proxy } = NextAuth(authConfig);
 
 const authRoutes = ["/login", "/register"];
 const protectedRoutes = ["/profile"];
