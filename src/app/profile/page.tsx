@@ -4,7 +4,7 @@ const ProfilePage = async () => {
   const session = await auth();
 
   return (
-    <div>
+    <div className="flex items-center justify-center flex-col">
       {session?.user && (
         <>
           <h1 className="text-3xl font-bold mb-7">
